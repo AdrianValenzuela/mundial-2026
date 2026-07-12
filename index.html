@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="light dark" />
+  <title>Álbum Mundial 2026 — Mi colección</title>
+  <meta name="description" content="Registro de cromos del álbum Panini FIFA World Cup 2026: tengo, faltan, repetidos y % de completado." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚽</text></svg>" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <main>
+    <div class="topbar">
+      <h1>⚽ Álbum Mundial 2026<span class="sub">Panini FIFA World Cup 26™ · 980 cromos</span></h1>
+      <button id="theme-toggle" class="iconbtn" title="Cambiar tema" aria-label="Cambiar tema">🌓</button>
+    </div>
+
+    <section class="hero" aria-label="Progreso general">
+      <div class="hero-label">Álbum completado</div>
+      <div class="hero-number" id="hero-number">0%</div>
+      <div class="meter"><div id="hero-meter" style="width:0%"></div></div>
+      <div class="tiles">
+        <div class="tile"><div class="t-label">Tengo</div><div class="t-value" id="tile-have">0</div></div>
+        <div class="tile"><div class="t-label">Me faltan</div><div class="t-value" id="tile-missing">980</div></div>
+        <div class="tile"><div class="t-label">Repes</div><div class="t-value" id="tile-dupes">0</div></div>
+      </div>
+    </section>
+
+    <div class="controls">
+      <input type="search" id="search" placeholder="Buscar selección… (ej. España, ARG)" aria-label="Buscar selección" />
+      <div class="chips" role="group" aria-label="Filtro">
+        <button class="chip" data-mode="all" aria-pressed="true">Todos</button>
+        <button class="chip" data-mode="missing" aria-pressed="false">Faltan</button>
+        <button class="chip" data-mode="dupes" aria-pressed="false">Repes</button>
+      </div>
+    </div>
+
+    <p class="hint">Toca un cromo para sumar (+1). Mantén pulsado (móvil) o clic derecho (PC) para restar. Los repes se marcan con ×2, ×3…</p>
+
+    <div id="sections"></div>
+
+    <section class="io" aria-label="Listas y respaldo">
+      <h2>Listas para intercambios y respaldo</h2>
+      <div class="row">
+        <button class="btn" id="btn-missing">📋 Lista de faltas</button>
+        <button class="btn" id="btn-dupes">🔁 Lista de repes</button>
+        <button class="btn" id="btn-export">💾 Descargar respaldo</button>
+        <button class="btn" id="btn-import">📥 Importar respaldo</button>
+        <button class="btn" id="btn-reset">🗑️ Reiniciar todo</button>
+      </div>
+      <textarea id="io-output" hidden readonly aria-label="Lista generada"></textarea>
+      <p class="note">Tu progreso se guarda automáticamente en este navegador. Descarga un respaldo de vez en cuando o para pasarlo a otro dispositivo.</p>
+      <input type="file" id="import-file" accept="application/json" hidden />
+    </section>
+  </main>
+
+  <div class="toast" id="toast" role="status"></div>
+
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
