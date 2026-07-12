@@ -89,8 +89,9 @@
       cell.dataset.id = s.id;
       cell.textContent = s.code.replace(/^[A-Z]+ /, "").replace(/^FWC /, "");
       cell.title = `${s.code} — ${s.label}`;
-      // Los cromos FWC muestran su código completo corto
+      // Los cromos FWC y Coca-Cola muestran su código completo corto
       if (s.section === "FWC") cell.textContent = s.code === "00" ? "00" : `F${s.code.split(" ")[1]}`;
+      if (s.section === "CC") cell.textContent = `C${s.code.split(" ")[1]}`;
       grid.appendChild(cell);
       cellById.set(s.id, cell);
     }
@@ -124,6 +125,14 @@
       stickers: ALL_STICKERS.filter((s) => s.section === team.code),
     });
   }
+
+  buildSection({
+    key: "CC",
+    title: "Coca-Cola",
+    flag: "🥤",
+    meta: "Exclusivos CC 1–12 · botellas promocionales",
+    stickers: ALL_STICKERS.filter((s) => s.section === "CC"),
+  });
 
   // ---------- Interacción con celdas ----------
   let longPressFired = false;

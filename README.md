@@ -1,6 +1,6 @@
 # ⚽ Álbum Mundial 2026 — Mi colección
 
-Tracker del álbum **Panini FIFA World Cup 26™** (980 cromos) para llevar el registro de los cromos que tengo, los que me faltan y los repetidos, con % de completado.
+Tracker del álbum **Panini FIFA World Cup 26™** (992 cromos) para llevar el registro de los cromos que tengo, los que me faltan y los repetidos, con % de completado.
 
 **App:** https://adrianvalenzuela.github.io/mundial-2026/
 
@@ -10,6 +10,7 @@ Tracker del álbum **Panini FIFA World Cup 26™** (980 cromos) para llevar el r
 - `FWC 1–19` — Especiales: emblema, mascotas, sedes y Museo FIFA (campeones 1930–2022)
 - **48 selecciones × 20 cromos** (`MEX 1–20`, `ARG 1–20`, …), ordenadas por grupos A–L
   - Cromo 1: escudo (foil) · Cromo 13: foto del equipo · Resto: jugadores
+- `CC 1–12` — Exclusivos Coca-Cola (página dedicada; se consiguen con botellas promocionales)
 
 ## Uso
 

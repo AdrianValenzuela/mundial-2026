@@ -1,5 +1,6 @@
-// Álbum Panini FIFA World Cup 2026 — 980 cromos
+// Álbum Panini FIFA World Cup 2026 — 992 cromos
 // 1 logo Panini (00) + 19 especiales FWC + 48 selecciones × 20 cromos
+// + 12 exclusivos Coca-Cola (CC 1–12, página dedicada)
 // Por equipo: 1 = Escudo (foil), 13 = Foto del equipo, resto jugadores
 // iso = código para las banderas de flagcdn.com (emoji como respaldo sin conexión)
 
@@ -70,6 +71,22 @@ const TEAMS = [
 
 const STICKERS_PER_TEAM = 20;
 
+// Cromos exclusivos Coca-Cola (se consiguen con botellas promocionales)
+const CC_PLAYERS = [
+  "Lamine Yamal (España)",
+  "Joshua Kimmich (Alemania)",
+  "Harry Kane (Inglaterra)",
+  "Santiago Giménez (México)",
+  "Antonee Robinson (Estados Unidos)",
+  "Jefferson Lerma (Colombia)",
+  "Edson Álvarez (México)",
+  "Virgil van Dijk (Países Bajos)",
+  "Alphonso Davies (Canadá)",
+  "Weston McKennie (Estados Unidos)",
+  "Lautaro Martínez (Argentina)",
+  "Gabriel Magalhães (Brasil)",
+];
+
 function stickerLabel(num) {
   if (num === 1) return "Escudo";
   if (num === 13) return "Foto del equipo";
@@ -98,8 +115,11 @@ function buildStickers() {
       });
     }
   }
+  CC_PLAYERS.forEach((nombre, i) => {
+    stickers.push({ id: `CC${i + 1}`, code: `CC ${i + 1}`, section: "CC", label: nombre });
+  });
   return stickers;
 }
 
 const ALL_STICKERS = buildStickers();
-const TOTAL_STICKERS = ALL_STICKERS.length; // 980
+const TOTAL_STICKERS = ALL_STICKERS.length; // 992
