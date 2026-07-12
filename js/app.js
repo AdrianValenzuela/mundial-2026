@@ -4,6 +4,14 @@
 
   const STORAGE_KEY = "mundial2026-album";
   const THEME_KEY = "mundial2026-theme";
+  const FECHA_KEY = "mundial2026-fecha";
+  const TOKEN_KEY = "mundial2026-token";
+  const REPO = "AdrianValenzuela/mundial-2026";
+  const REMOTE_FILE = "progress.json";
+
+  const token = localStorage.getItem(TOKEN_KEY);
+  // Sin token = modo visita: se muestra el progreso publicado, sin editar
+  const readonly = !token;
 
   // ---------- Estado ----------
   let counts = loadCounts(); // { stickerId: cantidad }
@@ -152,8 +160,15 @@
     sectionsEl.addEventListener(ev, () => clearTimeout(pressTimer), { passive: true })
   );
 
+  function touch() {
+    localStorage.setItem(FECHA_KEY, new Date().toISOString());
+    scheduleSync();
+  }
+
   function bump(id, delta) {
+    if (readonly) return;
     setCount(id, getCount(id) + delta);
+    touch();
     renderCell(id);
     renderStats();
     renderSectionStats();
@@ -322,6 +337,7 @@
     if (!file) return;
     const reader = new FileReader();
     reader.onload = () => {
+      if (readonly) return;
       try {
         const data = JSON.parse(reader.result);
         const imported = data.counts || data;
@@ -332,6 +348,7 @@
           if (n > 0) counts[s.id] = n;
         }
         save();
+        touch();
         renderAll();
         toast("Respaldo importado");
       } catch {
@@ -343,12 +360,178 @@
   });
 
   document.getElementById("btn-reset").addEventListener("click", () => {
+    if (readonly) return;
     if (confirm("¿Seguro que quieres borrar todo tu progreso? Esta acción no se puede deshacer.")) {
       counts = {};
       save();
+      touch();
       renderAll();
       toast("Progreso reiniciado");
     }
+  });
+
+  // ---------- Sincronización con GitHub (progress.json en el repo) ----------
+  const API_URL = `https://api.github.com/repos/${REPO}/contents/${REMOTE_FILE}`;
+  const syncStatusEl = document.getElementById("sync-status");
+  const bannerEl = document.getElementById("visit-banner");
+  let remoteSha; // undefined = desconocido, null = el archivo no existe aún
+  let syncTimer = null;
+  let pushing = false;
+  let pushAgain = false;
+  let attempts = 0;
+
+  function authHeaders(t) {
+    return { Authorization: `Bearer ${t || token}`, Accept: "application/vnd.github+json" };
+  }
+
+  function setSyncStatus(state) {
+    if (readonly) return;
+    syncStatusEl.hidden = false;
+    syncStatusEl.textContent = {
+      pending: "✏️ Sin guardar",
+      saving: "☁️ Guardando…",
+      ok: "☁️ Guardado",
+      error: "⚠️ Error al guardar",
+    }[state];
+  }
+
+  function scheduleSync() {
+    if (readonly) return;
+    attempts = 0;
+    setSyncStatus("pending");
+    clearTimeout(syncTimer);
+    syncTimer = setTimeout(() => {
+      syncTimer = null;
+      pushRemote();
+    }, 2500);
+  }
+
+  async function fetchRemote() {
+    try {
+      if (token) {
+        const r = await fetch(`${API_URL}?ref=main&ts=${Date.now()}`, { headers: authHeaders() });
+        if (r.status === 404) {
+          remoteSha = null;
+          return null;
+        }
+        if (!r.ok) return null;
+        const j = await r.json();
+        remoteSha = j.sha;
+        return JSON.parse(decodeURIComponent(escape(atob(j.content.replace(/\n/g, "")))));
+      }
+      const r = await fetch(`${REMOTE_FILE}?ts=${Date.now()}`, { cache: "no-store" });
+      if (!r.ok) return null;
+      return await r.json();
+    } catch {
+      return null;
+    }
+  }
+
+  async function pushRemote() {
+    if (readonly) return;
+    if (pushing) {
+      pushAgain = true;
+      return;
+    }
+    pushing = true;
+    setSyncStatus("saving");
+    try {
+      if (remoteSha === undefined) await fetchRemote();
+      const fecha = localStorage.getItem(FECHA_KEY) || new Date().toISOString();
+      const { have, dupes } = computeStats();
+      const body = JSON.stringify({ album: "mundial-2026", fecha, counts }, null, 2);
+      const res = await fetch(API_URL, {
+        method: "PUT",
+        keepalive: true,
+        headers: authHeaders(),
+        body: JSON.stringify({
+          message: `Progreso: ${have}/${TOTAL_STICKERS} (+${dupes} repes)`,
+          branch: "main",
+          content: btoa(unescape(encodeURIComponent(body))),
+          ...(remoteSha ? { sha: remoteSha } : {}),
+        }),
+      });
+      if (!res.ok) {
+        remoteSha = undefined; // el sha pudo quedar obsoleto: se pide de nuevo
+        throw new Error();
+      }
+      remoteSha = (await res.json()).content.sha;
+      attempts = 0;
+      setSyncStatus("ok");
+    } catch {
+      setSyncStatus("error");
+      if (attempts++ < 3) {
+        clearTimeout(syncTimer);
+        syncTimer = setTimeout(() => {
+          syncTimer = null;
+          pushRemote();
+        }, 6000);
+      }
+    }
+    pushing = false;
+    if (pushAgain) {
+      pushAgain = false;
+      scheduleSync();
+    }
+  }
+
+  // Último intento de guardado al salir con cambios pendientes
+  window.addEventListener("pagehide", () => {
+    if (syncTimer && !readonly) {
+      clearTimeout(syncTimer);
+      pushRemote();
+    }
+  });
+
+  function updateBanner(fecha) {
+    if (!readonly) return;
+    const cuando = fecha
+      ? " · actualizado el " +
+        new Date(fecha).toLocaleString("es-ES", { dateStyle: "medium", timeStyle: "short" })
+      : " · aún sin progreso publicado";
+    bannerEl.textContent = `👀 Así va mi colección (solo lectura)${cuando}`;
+    bannerEl.hidden = false;
+  }
+
+  // ---------- Panel de conexión (dueño) ----------
+  const syncPanel = document.getElementById("sync-panel");
+  const tokenInput = document.getElementById("token-input");
+  const btnConnect = document.getElementById("btn-connect");
+  const btnDisconnect = document.getElementById("btn-disconnect");
+  const syncNote = document.getElementById("sync-note");
+
+  document.getElementById("sync-open").addEventListener("click", () => {
+    syncPanel.hidden = !syncPanel.hidden;
+    if (!syncPanel.hidden) syncPanel.scrollIntoView({ behavior: "smooth", block: "center" });
+  });
+
+  if (token) {
+    tokenInput.hidden = true;
+    btnConnect.hidden = true;
+    btnDisconnect.hidden = false;
+    syncNote.textContent =
+      "Conectado como dueño: tus cambios se publican automáticamente en la web.";
+  }
+
+  btnConnect.addEventListener("click", async () => {
+    const t = tokenInput.value.trim();
+    if (!t) {
+      toast("Pega primero el token");
+      return;
+    }
+    const r = await fetch(`https://api.github.com/repos/${REPO}`, { headers: authHeaders(t) }).catch(() => null);
+    if (!r || !r.ok) {
+      toast("Token no válido o sin acceso al repo");
+      return;
+    }
+    localStorage.setItem(TOKEN_KEY, t);
+    toast("Conectado — recargando…");
+    setTimeout(() => location.reload(), 700);
+  });
+
+  btnDisconnect.addEventListener("click", () => {
+    localStorage.removeItem(TOKEN_KEY);
+    location.reload();
   });
 
   // ---------- Inicio ----------
@@ -359,5 +542,41 @@
     applyFilters();
   }
 
-  renderAll();
+  async function init() {
+    document.body.classList.toggle("readonly", readonly);
+    // Migración: progreso local anterior a la sincronización, sin fecha
+    if (!localStorage.getItem(FECHA_KEY) && Object.keys(counts).length) {
+      localStorage.setItem(FECHA_KEY, new Date().toISOString());
+    }
+    renderAll(); // muestra lo local de inmediato mientras llega lo remoto
+
+    const remote = await fetchRemote();
+    if (readonly) {
+      if (remote) {
+        counts = remote.counts || {};
+        renderAll();
+        updateBanner(remote.fecha);
+      } else {
+        updateBanner(null);
+      }
+      return;
+    }
+
+    const localFecha = localStorage.getItem(FECHA_KEY) || "";
+    const remoteFecha = (remote && remote.fecha) || "";
+    if (remote && remoteFecha > localFecha) {
+      // Lo publicado es más reciente (p. ej. editaste desde otro dispositivo)
+      counts = remote.counts || {};
+      save();
+      localStorage.setItem(FECHA_KEY, remoteFecha);
+      renderAll();
+      setSyncStatus("ok");
+    } else if (localFecha && localFecha > remoteFecha) {
+      scheduleSync(); // lo local va por delante: publicar
+    } else {
+      setSyncStatus("ok");
+    }
+  }
+
+  init();
 })();

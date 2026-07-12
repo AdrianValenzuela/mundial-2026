@@ -262,6 +262,41 @@ main { max-width: 980px; margin: 0 auto; padding: 16px 12px 80px; }
 }
 .io .note { color: var(--muted); font-size: 0.78rem; margin-top: 8px; }
 
+/* ---------- Sincronización y modo visita ---------- */
+.sync-status {
+  color: var(--muted);
+  font-size: 0.78rem;
+  white-space: nowrap;
+}
+.banner {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 14px;
+  margin-bottom: 12px;
+  color: var(--ink-2);
+  font-size: 0.88rem;
+}
+#sync-panel {
+  border-top: 1px solid var(--hairline);
+  margin-top: 14px;
+  padding-top: 12px;
+}
+#sync-panel h2 { font-size: 0.95rem; margin: 0 0 6px; }
+#sync-panel input {
+  flex: 1 1 220px;
+  min-width: 0;
+  padding: 9px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--page);
+  color: var(--ink);
+  font-size: 0.88rem;
+}
+body.readonly .owner-only { display: none; }
+body.readonly .hint { display: none; }
+body.readonly .cell { cursor: default; }
+
 .toast {
   position: fixed;
   bottom: 18px;

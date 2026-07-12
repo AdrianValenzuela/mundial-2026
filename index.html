@@ -13,8 +13,12 @@
   <main>
     <div class="topbar">
       <h1>⚽ Álbum Mundial 2026<span class="sub">Panini FIFA World Cup 26™ · 980 cromos</span></h1>
+      <span id="sync-status" class="sync-status" hidden></span>
+      <button id="sync-open" class="iconbtn" title="Sincronización" aria-label="Sincronización">🔑</button>
       <button id="theme-toggle" class="iconbtn" title="Cambiar tema" aria-label="Cambiar tema">🌓</button>
     </div>
+
+    <div id="visit-banner" class="banner" hidden></div>
 
     <section class="hero" aria-label="Progreso general">
       <div class="hero-label">Álbum completado</div>
@@ -46,12 +50,22 @@
         <button class="btn" id="btn-missing">📋 Lista de faltas</button>
         <button class="btn" id="btn-dupes">🔁 Lista de repes</button>
         <button class="btn" id="btn-export">💾 Descargar respaldo</button>
-        <button class="btn" id="btn-import">📥 Importar respaldo</button>
-        <button class="btn" id="btn-reset">🗑️ Reiniciar todo</button>
+        <button class="btn owner-only" id="btn-import">📥 Importar respaldo</button>
+        <button class="btn owner-only" id="btn-reset">🗑️ Reiniciar todo</button>
       </div>
       <textarea id="io-output" hidden readonly aria-label="Lista generada"></textarea>
-      <p class="note">Tu progreso se guarda automáticamente en este navegador. Descarga un respaldo de vez en cuando o para pasarlo a otro dispositivo.</p>
+      <p class="note owner-only">Tu progreso se guarda en este navegador y se publica automáticamente en la web para que cualquiera pueda verlo.</p>
       <input type="file" id="import-file" accept="application/json" hidden />
+
+      <div id="sync-panel" hidden>
+        <h2>🔑 Sincronización (dueño)</h2>
+        <p class="note" id="sync-note">Pega un token «fine-grained» de GitHub con permiso <strong>Contents: Read and write</strong> solo sobre el repo <code>mundial-2026</code>. Se guarda únicamente en este navegador y publica tu progreso en la web.</p>
+        <div class="row">
+          <input type="password" id="token-input" placeholder="github_pat_…" aria-label="Token de GitHub" />
+          <button class="btn" id="btn-connect">Conectar</button>
+          <button class="btn" id="btn-disconnect" hidden>Desconectar este navegador</button>
+        </div>
+      </div>
     </section>
   </main>
 
